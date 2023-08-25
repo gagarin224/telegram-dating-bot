@@ -1,8 +1,8 @@
 const { Scenes } = require('telegraf');
 const fetch = require('node-fetch');
+const DatabaseHelper = require('../helpers/DatabaseHelper');
 const { token } = require('../config/config.json');
 const User = require('../db/models/user');
-const { checkUser } = require('../utils/functions');
 const { genderButton, wantedGenderButton, descriptionButton, approveButton } = require('../utils/buttons');
 const { BUTTON_TEXT, SCENES_TEXT } = require('../utils/constants');
 
@@ -215,7 +215,7 @@ class Register {
                 const status = true;
                 const history = [];
 
-                const data = await checkUser(chatId);
+                const data = await DatabaseHelper.checkUser({ chatId: ctx.from.id });
 
                 if (!data) {
                     await new User({
@@ -231,6 +231,7 @@ class Register {
                         registerDate
                     }).save();
                 } else {
+                    data.chatId = chatId;
                     data.name = name;
                     data.age = age;
                     data.gender = gender;
@@ -239,6 +240,7 @@ class Register {
                     data.description = description;
                     data.photo = photo;
                     data.status = status;
+                    data.registerDate = registerDate;
                     data.save();
                 }
 

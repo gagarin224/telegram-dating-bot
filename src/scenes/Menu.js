@@ -1,8 +1,9 @@
 const { Scenes } = require('telegraf');
+const DatabaseHelper = require('../helpers/DatabaseHelper');
 const { token } = require('../config/config.json');
 const { SCENES_TEXT, BUTTON_TEXT } = require('../utils/constants');
 const { menuButton, profileButton, hideButton, returnMenuButton, viewProfileButton, likeButton, waitButton } = require('../utils/buttons');
-const { checkUser, findProfile, pushHistory, newLike, newLikeMessage, checkLikes, getMemberUsername, getPrivateForwardsType } = require('../utils/functions');
+const TelegramService = require('../services/TelegramService');
 
 class Menu {
     Main() {
@@ -41,7 +42,8 @@ class Menu {
         const view = new Scenes.BaseScene('view');
 
         view.enter(async (ctx) => {
-            const isPrivate = await getPrivateForwardsType(ctx);
+            const telegram = new TelegramService(ctx);
+            const isPrivate = await telegram._getPrivateForwardsType(ctx);
 
             if (isPrivate) {
                 await ctx.reply(SCENES_TEXT.private_forwards);
@@ -50,7 +52,7 @@ class Menu {
 
             const { age, wantedGender, history } = ctx.session;
 
-            const result = await findProfile(age, wantedGender, history);
+            const result = await telegram._findProfile(age, wantedGender, history);
 
             if (result) {
                 const { chatId, name, age, city, description, photo } = result;
@@ -67,17 +69,17 @@ class Menu {
         view.on('text', async (ctx) => {
             switch (ctx.message.text) {
                 case BUTTON_TEXT.view_like:
-                    await newLike(ctx.chat.id, ctx.session.memberId);
+                    await DatabaseHelper.newLike({ userId: ctx.chat.id, memberId: ctx.session.memberId });
                     ctx.telegram.sendMessage(ctx.session.memberId, SCENES_TEXT.view_like);
-                    await pushHistory(ctx, ctx.session.memberId);
+                    await DatabaseHelper.pushHistory({ ctx: ctx, memberId: ctx.session.memberId });
                     await ctx.scene.enter('view');
                     break;
                 case BUTTON_TEXT.view_message:
-                    await pushHistory(ctx, ctx.session.memberId);
+                    await DatabaseHelper.pushHistory({ ctx: ctx, memberId: ctx.session.memberId });
                     await ctx.scene.enter('viewmessage');
                     break;
                 case BUTTON_TEXT.view_unlike:
-                    await pushHistory(ctx, ctx.session.memberId);
+                    await DatabaseHelper.pushHistory({ ctx: ctx, memberId: ctx.session.memberId });
                     await ctx.scene.enter('view');
                     break;
                 case BUTTON_TEXT.return_menu:
@@ -100,7 +102,7 @@ class Menu {
         });
 
         view_message.on('text', async (ctx) => {
-            await newLikeMessage(ctx.chat.id, ctx.session.memberId, ctx.message.text);
+            await DatabaseHelper.newLikeMessage({ chatId: ctx.chat.id, memberId: ctx.session.memberId, message: ctx.message.text });
             ctx.telegram.sendMessage(ctx.session.memberId, SCENES_TEXT.view_like);
             await ctx.scene.enter('view');
         });
@@ -122,8 +124,14 @@ class Menu {
 
             const { name, age, city, description, photo } = ctx.session;
 
-            if (description != BUTTON_TEXT.skip) await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city} - ${description}` });
-            else await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city}` });
+            if (description != BUTTON_TEXT.skip) {
+                await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city} - ${description}` });
+                return await ctx.reply(SCENES_TEXT.profile_enter);
+            }
+            else {
+                await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city}` });
+                return await ctx.reply(SCENES_TEXT.profile_enter);
+            }
         });
 
         profile.on('text', async (ctx) => {
@@ -153,18 +161,19 @@ class Menu {
         const likes = new Scenes.BaseScene('likes');
 
         likes.enter(async (ctx) => {
-            const isPrivate = await getPrivateForwardsType(ctx);
+            const telegram = new TelegramService(ctx);
+            const isPrivate = await telegram._getPrivateForwardsType(ctx);
 
             if (isPrivate) {
                 await ctx.reply(SCENES_TEXT.private_forwards);
                 return await ctx.scene.enter('main');
             }
 
-            const result = await checkLikes(ctx.chat.id);
+            const result = await DatabaseHelper.checkLikes({ memberId: ctx.chat.id });
 
             if (result) {
                 const { userId, message } = result;
-                const data = await checkUser(userId);
+                const data = await DatabaseHelper.checkUser({ chatId: userId });
                 const { name, age, city, description, photo } = data;
 
                 if (message) {
@@ -181,9 +190,11 @@ class Menu {
         });
 
         likes.on('text', async (ctx) => {
-            const data = await checkLikes(ctx.chat.id);
+            const data = await DatabaseHelper.checkLikes({ memberId: ctx.chat.id });
             const { userId, memberId } = data;
-            const name = await getMemberUsername(ctx, userId);
+
+            const telegram = new TelegramService(ctx);
+            const name = await telegram._getMemberUsername(ctx, userId);
 
             const link_member = `<a href="tg://user?id=${memberId}">${ctx.message.from.first_name}</a>`
             const link_user = `<a href="tg://user?id=${userId}">${name}</a>`
@@ -226,7 +237,7 @@ class Menu {
             .then(async (text) => {
                 const textMatch = text.match(/[a-zA-Z]*\/[a-zA-Z0-9_]*.[a-zA-Z]*/g);
                 let photoURL = `https://api.telegram.org/file/bot${token}/${textMatch}`;
-                ctx.session.data.photo = photoURL;
+                ctx.session.photo = photoURL;
                 await ctx.reply(SCENES_TEXT.update_photo);
                 await ctx.scene.enter('main');
             });
@@ -260,7 +271,7 @@ class Menu {
             const currentDescription = ctx.message.text;
 
             if (currentDescription && currentDescription != BUTTON_TEXT.return_menu) {
-                ctx.session.data.description = currentDescription;
+                ctx.session.description = currentDescription;
                 await ctx.reply(SCENES_TEXT.update_description);
                 await ctx.scene.enter('main');
             } else if (currentDescription === BUTTON_TEXT.return_menu) await ctx.scene.enter('main');
@@ -285,7 +296,7 @@ class Menu {
         hide.on('text', async (ctx) => {
             switch (ctx.message.text) {
                 case BUTTON_TEXT.yes:
-                    const data = await checkUser(ctx.chat.id);
+                    const data = await DatabaseHelper.checkUser({ chatId: ctx.from.id });
 
                     await ctx.reply(SCENES_TEXT.hide_yes, {
                         ...waitButton
@@ -314,7 +325,7 @@ class Menu {
         wait.on('text', async (ctx) => {
             switch (ctx.message.text) {
                 case BUTTON_TEXT.view_profiles:
-                    const data = await checkUser(ctx.chat.id);
+                    const data = await DatabaseHelper.checkUser({ chatId: ctx.from.id });
 
                     await ctx.scene.enter('main');
                     data.status = true;

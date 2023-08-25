@@ -1,5 +1,7 @@
 const { Scenes, Telegraf } = require('telegraf');
-const LocalSession = require('telegraf-session-local');
+const mongoose = require('mongoose');
+const { session } = require('telegraf-session-mongodb');
+const DatabaseHelper = require('../src/helpers/DatabaseHelper');
 const SceneGenetator = require('./scenes/Register');
 const { token } = require('./config/config.json');
 const { start } = require('./controllers/commands');
@@ -50,12 +52,15 @@ const stage = new Scenes.Stage([
     wait
 ]);
 
-const setupBot = () => {
-    bot.use((new LocalSession({ database: 'session.json' })).middleware());
+const setupBot = async () => {
+    bot.use(session(mongoose.connection, { collectionName: 'sessions' }));
     bot.use(stage.middleware());
 
-    bot.use((ctx, next) => {
-        return next();
+    bot.use(async (ctx, next) => {
+        const sessionId = ctx.from.id.toString();
+        ctx.session = await DatabaseHelper.loadSession({ key: sessionId });
+        await next();
+        await DatabaseHelper.saveSession({ key: sessionId, data: ctx.session });
     });
 
     bot.start(start);
