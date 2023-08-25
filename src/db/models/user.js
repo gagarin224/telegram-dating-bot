@@ -30,8 +30,7 @@ const schema = Schema({
     description: reqString,
     photo: reqString,
     status: reqBoolen,
-    registerDate: reqDate,
-    //history: [String]
+    registerDate: reqDate
 });
 
 module.exports = model("user", schema);
