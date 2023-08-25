@@ -10,9 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "fs": "^0.0.1-security",
-    "mongoose": "^5.13.5",
+    "mongoose": "^7.4.2",
     "node-fetch": "^2.6.1",
-    "telegraf": "^4.4.2",
-    "telegraf-session-local": "^2.1.1"
+    "telegraf": "^4.12.2",
+    "telegraf-session-mongodb": "^2.0.2"
   }
 }
