@@ -1,4 +1,5 @@
 const User = require('../db/models/user');
+const { BUTTON_TEXT } = require('../utils/constants');
 const { min, max } = require('../config/config.json');
 
 class TelegramService {
@@ -7,8 +8,8 @@ class TelegramService {
     }
 
     async _findProfile(age, gender, history) {
-        if (gender === "Девушки") gender = "Девушка";
-        else if (gender === "Парни") gender = "Парень";
+        if (gender === BUTTON_TEXT.women) gender = BUTTON_TEXT.woman;
+        else if (gender === BUTTON_TEXT.men) gender = BUTTON_TEXT.man;
 
         const result = await User.find({ gender, status: true });
 
