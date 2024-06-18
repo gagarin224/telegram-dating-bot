@@ -1,5 +1,5 @@
-const { Markup } = require('telegraf');
-const { BUTTON_TEXT } = require('../utils/constants');
+import { Markup } from 'telegraf';
+import { BUTTON_TEXT } from '../utils/constants.js';
 
 const startButton =
     Markup.keyboard([
@@ -85,7 +85,7 @@ const waitButton =
     .oneTime()
     .resize()
 
-module.exports = {
+export {
     startButton,
     genderButton,
     wantedGenderButton,
@@ -98,4 +98,4 @@ module.exports = {
     viewProfileButton,
     likeButton,
     waitButton
-}
+};

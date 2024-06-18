@@ -1,12 +1,11 @@
-const { Scenes } = require('telegraf');
-const DatabaseHelper = require('../helpers/DatabaseHelper');
-const { token } = require('../config/config.json');
-const { SCENES_TEXT, BUTTON_TEXT } = require('../utils/constants');
-const { menuButton, profileButton, hideButton, returnMenuButton, viewProfileButton, likeButton, waitButton } = require('../utils/buttons');
-const TelegramService = require('../services/TelegramService');
+import { Scenes } from 'telegraf';
+import DatabaseHelper from '../helpers/DatabaseHelper.js';
+import { SCENES_TEXT, BUTTON_TEXT } from '../utils/constants.js';
+import { menuButton, profileButton, hideButton, returnMenuButton, viewProfileButton, likeButton, waitButton } from '../utils/buttons.js';
+import TelegramService from '../services/TelegramService.js';
 
-class Menu {
-    Main() {
+export default class Menu {
+    static Main() {
         const main = new Scenes.BaseScene('main');
 
         main.enter(async (ctx) => {
@@ -38,7 +37,7 @@ class Menu {
         return main;
     }
 
-    View() {
+    static View() {
         const view = new Scenes.BaseScene('view');
 
         view.enter(async (ctx) => {
@@ -94,7 +93,7 @@ class Menu {
         return view;
     }
 
-    ViewMessage() {
+    static ViewMessage() {
         const view_message = new Scenes.BaseScene('viewmessage');
 
         view_message.enter(async (ctx) => {
@@ -114,7 +113,7 @@ class Menu {
         return view_message;
     }
 
-    Profile() {
+    static Profile() {
         const profile = new Scenes.BaseScene('profile');
 
         profile.enter(async (ctx) => {
@@ -157,7 +156,7 @@ class Menu {
         return profile;
     }
 
-    Likes() {
+    static Likes() {
         const likes = new Scenes.BaseScene('likes');
 
         likes.enter(async (ctx) => {
@@ -219,7 +218,7 @@ class Menu {
         return likes;
     }
 
-    ChangePhoto() {
+    static ChangePhoto() {
         const photo = new Scenes.BaseScene('newphoto');
 
         photo.enter(async (ctx) => {
@@ -229,18 +228,13 @@ class Menu {
         });
 
         photo.on('photo', async (ctx) => {
-            const photoURLStart = ctx.message.photo[ctx.message.photo.length-1].file_id;
+            const photo = ctx.message.photo.pop();
+            const fileId = photo.file_id;
+            const fileUrl = await ctx.telegram.getFileLink(fileId);
 
-            const photoURLEnd = `https://api.telegram.org/bot${token}/getFile?file_id=${photoURLStart}`;
-
-            await fetch(photoURLEnd).then(async (res) => await res.text())
-            .then(async (text) => {
-                const textMatch = text.match(/[a-zA-Z]*\/[a-zA-Z0-9_]*.[a-zA-Z]*/g);
-                let photoURL = `https://api.telegram.org/file/bot${token}/${textMatch}`;
-                ctx.session.photo = photoURL;
-                await ctx.reply(SCENES_TEXT.update_photo);
-                await ctx.scene.enter('main');
-            });
+            ctx.session.photo = fileUrl.href;
+            await ctx.reply(SCENES_TEXT.update_photo);
+            await ctx.scene.enter('main');
         });
 
         photo.on('message', async (ctx) => {
@@ -257,7 +251,7 @@ class Menu {
         return photo;
     }
 
-    ChangeDescription() {
+    static ChangeDescription() {
         const description = new Scenes.BaseScene('newdescription');
 
         description.enter(async (ctx) => {
@@ -284,7 +278,7 @@ class Menu {
         return description;
     }
 
-    Hide() {
+    static Hide() {
         const hide = new Scenes.BaseScene('hide');
 
         hide.enter((ctx) => {
@@ -319,7 +313,7 @@ class Menu {
         return hide;
     }
 
-    Wait() {
+    static Wait() {
         const wait = new Scenes.BaseScene('wait');
 
         wait.on('text', async (ctx) => {
@@ -340,5 +334,3 @@ class Menu {
         return wait;
     }
 }
-
-module.exports = Menu;

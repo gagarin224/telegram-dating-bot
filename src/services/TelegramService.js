@@ -1,8 +1,10 @@
-const User = require('../db/models/user');
-const { BUTTON_TEXT } = require('../utils/constants');
-const { min, max } = require('../config/config.json');
+import User from '../db/models/user.js';
+import { BUTTON_TEXT } from '../utils/constants.js';
+import config from '../config/config.json' assert { type: 'json' };
 
-class TelegramService {
+const { min, max } = config;
+
+export default class TelegramService {
     constructor(client) {
         this.client = client;
     }
@@ -33,5 +35,3 @@ class TelegramService {
         });
     }
 }
-
-module.exports = TelegramService;

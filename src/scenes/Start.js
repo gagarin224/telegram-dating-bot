@@ -1,9 +1,9 @@
-const { Scenes } = require('telegraf');
-const DatabaseHelper = require('../helpers/DatabaseHelper');
-const { BUTTON_TEXT, SCENES_TEXT } = require('../utils/constants');
+import { Scenes } from 'telegraf';
+import DatabaseHelper from '../helpers/DatabaseHelper.js';
+import { BUTTON_TEXT, SCENES_TEXT } from '../utils/constants.js';
 
-class Start {
-    FirstStep() {
+export default class Start {
+    static FirstStep() {
         const start = new Scenes.BaseScene('start');
 
         start.on('text', async (ctx) => {
@@ -30,5 +30,3 @@ class Start {
         return start;
     }
 }
-
-module.exports = Start;

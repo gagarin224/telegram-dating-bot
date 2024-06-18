@@ -1,13 +1,11 @@
-const { Scenes } = require('telegraf');
-const fetch = require('node-fetch');
-const DatabaseHelper = require('../helpers/DatabaseHelper');
-const { token } = require('../config/config.json');
-const User = require('../db/models/user');
-const { genderButton, wantedGenderButton, descriptionButton, approveButton } = require('../utils/buttons');
-const { BUTTON_TEXT, SCENES_TEXT } = require('../utils/constants');
+import { Scenes } from 'telegraf';
+import DatabaseHelper from '../helpers/DatabaseHelper.js';
+import User from '../db/models/user.js';
+import { genderButton, wantedGenderButton, descriptionButton, approveButton } from '../utils/buttons.js';
+import { BUTTON_TEXT, SCENES_TEXT } from '../utils/constants.js';
 
-class Register {
-    GetName () {
+export default class Register {
+    static GetName () {
         const username = new Scenes.BaseScene('name');
 
         username.enter(async (ctx) => {
@@ -31,7 +29,7 @@ class Register {
         return username;
     }
 
-    GetAge () {
+    static GetAge () {
         const age = new Scenes.BaseScene('age');
 
         age.enter(async (ctx) => {
@@ -55,7 +53,7 @@ class Register {
         return age;
     }
 
-    GetGender() {
+    static GetGender() {
         const gender = new Scenes.BaseScene('gender');
 
         gender.enter(async (ctx) => {
@@ -81,7 +79,7 @@ class Register {
         return gender;
     }
 
-    GetWantedGender() {
+    static GetWantedGender() {
         const wantedGender = new Scenes.BaseScene('wantedGender');
 
         wantedGender.enter(async (ctx) => {
@@ -107,7 +105,7 @@ class Register {
         return wantedGender;
     }
 
-    GetCity() {
+    static GetCity() {
         const city = new Scenes.BaseScene('city');
 
         city.enter(async (ctx) => {
@@ -131,7 +129,7 @@ class Register {
         return city;
     }
 
-    GetDescription() {
+    static GetDescription() {
         const description = new Scenes.BaseScene('description');
 
         description.enter(async (ctx) => {
@@ -158,7 +156,7 @@ class Register {
         return description;
     }
 
-    GetPhoto() {
+    static GetPhoto() {
         const photo = new Scenes.BaseScene('photo');
 
         photo.enter(async (ctx) => {
@@ -171,17 +169,12 @@ class Register {
         });
 
         photo.on('photo', async (ctx) => {
-            const photoURLStart = ctx.message.photo[ctx.message.photo.length-1].file_id;
+            const photo = ctx.message.photo.pop();
+            const fileId = photo.file_id;
+            const fileUrl = await ctx.telegram.getFileLink(fileId);
 
-            const photoURLEnd = `https://api.telegram.org/bot${token}/getFile?file_id=${photoURLStart}`;
-
-            await fetch(photoURLEnd).then(async (res) => await res.text())
-            .then(async (text) => {
-                const textMatch = text.match(/[a-zA-Z]*\/[a-zA-Z0-9_]*.[a-zA-Z]*/g);
-                let photoURL = `https://api.telegram.org/file/bot${token}/${textMatch}`;
-                ctx.session.photo = photoURL;
-                await ctx.scene.enter('approve');
-            });
+            ctx.session.photo = fileUrl.href;
+            await ctx.scene.enter('approve');
         });
 
         photo.on('message', (ctx) => ctx.reply(SCENES_TEXT.register_provide_photo));
@@ -189,7 +182,7 @@ class Register {
         return photo;
     }
 
-    ApproveRegister() {
+    static ApproveRegister() {
         const approve = new Scenes.BaseScene('approve');
 
         approve.enter(async (ctx) => {
@@ -263,5 +256,3 @@ class Register {
         return approve;
     }
 }
-
-module.exports = Register;

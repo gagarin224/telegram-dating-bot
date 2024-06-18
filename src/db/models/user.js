@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const reqString = {
     type: String,
@@ -33,4 +33,4 @@ const schema = Schema({
     registerDate: reqDate
 });
 
-module.exports = model("user", schema);
+export default model("user", schema);

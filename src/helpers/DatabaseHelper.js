@@ -1,8 +1,8 @@
-const User = require('../db/models/user');
-const Like = require('../db/models/like');
-const SessionModel = require('../db/models/session');
+import User from '../db/models/user.js';
+import Like from '../db/models/like.js';
+import SessionModel from '../db/models/session.js';
 
-class DatabaseHelper {
+export default class DatabaseHelper {
     constructor() {
         throw new ReferenceError(`Class ${this.constructor.name} cannot be initialized!`);
     }
@@ -12,7 +12,7 @@ class DatabaseHelper {
     }
 
     static async loadSession({ key }) {
-        return await SessionModel.findOne({ key })?.data || {};
+        return (await SessionModel.findOne({ key }))?.data || {};
     }
 
     static async checkUser({ chatId }) {
@@ -35,5 +35,3 @@ class DatabaseHelper {
         return ctx.session.history.push(memberId);
     }
 }
-
-module.exports = DatabaseHelper;

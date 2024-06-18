@@ -1,12 +1,6 @@
 import mongoose from 'mongoose';
 import Logger from '../services/Logger.js';
-import { readFile } from 'fs/promises';
-
-const config = JSON.parse(
-    await readFile(
-        new URL('../../config.json', import.meta.url)
-    )
-);
+import config from '../config/config.json' assert { type: 'json' };
 
 export const connectToDatabase = async () => {
     try {
@@ -15,7 +9,7 @@ export const connectToDatabase = async () => {
             useUnifiedTopology: true,
         });
 
-        Logger.log('[Database] Database is successfully connected.');
+        Logger.info('[Database] Database is successfully connected.');
     } catch (error) {
         Logger.error('[Database] Connection error:', error);
     }

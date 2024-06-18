@@ -1,55 +1,63 @@
-const { Scenes, Telegraf } = require('telegraf');
-const mongoose = require('mongoose');
-const { session } = require('telegraf-session-mongodb');
-const DatabaseHelper = require('../src/helpers/DatabaseHelper');
-const SceneGenetator = require('./scenes/Register');
-const { token } = require('./config/config.json');
-const { start } = require('./controllers/commands');
-const curScene = new SceneGenetator();
-const nameScene = curScene.GetName();
-const ageScene = curScene.GetAge();
-const genderScene = curScene.GetGender();
-const wantedGenderScene = curScene.GetWantedGender();
-const cityScene = curScene.GetCity();
-const descriptionScene = curScene.GetDescription();
-const photoScene = curScene.GetPhoto();
-const approveScene = curScene.ApproveRegister();
-const StartSceneGenerator = require('./scenes/Start');
-const startCurScene = new StartSceneGenerator();
-const firstScene = startCurScene.FirstStep();
-const MenuSceneGenerator = require('./scenes/Menu');
-const menuCurScene = new MenuSceneGenerator();
-const main = menuCurScene.Main();
-const view = menuCurScene.View();
-const view_message = menuCurScene.ViewMessage();
-const profile = menuCurScene.Profile();
-const likes = menuCurScene.Likes();
-const hide = menuCurScene.Hide();
-const wait = menuCurScene.Wait();
-const updatePhoto = menuCurScene.ChangePhoto();
-const updateDescription = menuCurScene.ChangeDescription();
+import { Scenes, Telegraf } from 'telegraf';
+import mongoose from 'mongoose';
+import { session } from 'telegraf-session-mongodb';
+import config from './config/config.json' assert { type: 'json' };
+import DatabaseHelper from '../src/helpers/DatabaseHelper.js';
+import Register from './scenes/Register.js';
+import Start from './scenes/Start.js';
+import Menu from './scenes/Menu.js';
+import { start } from './controllers/commands.js';
 
-const bot = new Telegraf(token);
+const curScene = Register;
+const startCurScene = Start;
+const menuCurScene = Menu;
+
+const {
+    GetName: nameScene,
+    GetAge: ageScene,
+    GetGender: genderScene,
+    GetWantedGender: wantedGenderScene,
+    GetCity: cityScene,
+    GetDescription: descriptionScene,
+    GetPhoto: photoScene,
+    ApproveRegister: approveScene
+} = curScene;
+
+const { FirstStep: firstScene } = startCurScene;
+
+const { 
+    Main: main, 
+    View: view, 
+    ViewMessage: view_message, 
+    Profile: profile, 
+    Likes: likes, 
+    Hide: hide, 
+    Wait: wait, 
+    ChangePhoto: updatePhoto, 
+    ChangeDescription: updateDescription 
+} = menuCurScene;
+
+const bot = new Telegraf(config.token);
 
 const stage = new Scenes.Stage([
-    nameScene, 
-    ageScene, 
-    genderScene, 
-    wantedGenderScene, 
-    cityScene, 
-    descriptionScene, 
-    photoScene, 
-    approveScene, 
-    firstScene, 
-    main, 
-    view, 
-    view_message, 
-    profile, 
-    likes, 
-    updatePhoto, 
-    updateDescription, 
-    hide,
-    wait
+    nameScene(),
+    ageScene(),
+    genderScene(),
+    wantedGenderScene(),
+    cityScene(),
+    descriptionScene(),
+    photoScene(),
+    approveScene(),
+    firstScene(),
+    main(),
+    view(),
+    view_message(),
+    profile(),
+    likes(),
+    updatePhoto(),
+    updateDescription(),
+    hide(),
+    wait()
 ]);
 
 const setupBot = async () => {
@@ -68,6 +76,6 @@ const setupBot = async () => {
     return bot;
 }
 
-module.exports = {
+export {
     setupBot
-}
+};
