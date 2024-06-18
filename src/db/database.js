@@ -1,19 +1,22 @@
-const mongoose = require('mongoose');
-const { dataURL } = require('../config/config.json');
+import mongoose from 'mongoose';
+import Logger from '../services/Logger.js';
+import { readFile } from 'fs/promises';
 
-const connectToDatabase = async () => {
+const config = JSON.parse(
+    await readFile(
+        new URL('../../config.json', import.meta.url)
+    )
+);
+
+export const connectToDatabase = async () => {
     try {
-        await mongoose.connect(dataURL, {
+        await mongoose.connect(config.dataURL, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
 
-        console.log('[Database] Database is successfully connected.');
+        Logger.log('[Database] Database is successfully connected.');
     } catch (error) {
-        console.error('[Database] Connection error:', error);
+        Logger.error('[Database] Connection error:', error);
     }
 };
-
-module.exports = {
-    connectToDatabase
-}
