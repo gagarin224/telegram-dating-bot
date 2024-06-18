@@ -1,11 +1,11 @@
 {
   "name": "telegram-bot",
   "version": "1.0.0",
-  "description": "Telegram бот для знакомств",
+  "description": "Telegram dating bot",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node --no-warnings=experimental-modules index.js"
   },
   "author": "Jason Kings",
   "license": "ISC",
@@ -13,8 +13,7 @@
     "chalk": "^5.3.0",
     "fs": "^0.0.1-security",
     "mongoose": "^7.4.2",
-    "node-fetch": "^2.6.1",
-    "telegraf": "^4.12.2",
+    "telegraf": "^4.16.3",
     "telegraf-session-mongodb": "^2.0.2"
   }
 }
