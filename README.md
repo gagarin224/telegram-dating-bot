@@ -144,8 +144,7 @@ Feedback
 
 Documentation
 =========
-[fs](https://github.com/npm/security-holder)<br>
+[chalk](https://www.npmjs.com/package/chalk)<br>
 [mongoose](https://www.mongodb.com/docs/atlas/)<br>
-[node-fetch](https://github.com/node-fetch/node-fetch)<br>
 [telegraf](https://telegraf.js.org/)<br>
 [telegraf-session-mongodb](https://www.npmjs.com/package/telegraf-session-mongodb)
