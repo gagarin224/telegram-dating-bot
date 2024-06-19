@@ -188,11 +188,7 @@ export default class Register {
         approve.enter(async (ctx) => {
             await ctx.reply(SCENES_TEXT.register_approve_enter);
 
-            if (ctx.session.description && ctx.session.description != BUTTON_TEXT.skip) {
-                await ctx.replyWithPhoto({ url: `${ctx.session.photo}` }, { caption: `${ctx.session.name}, ${ctx.session.age}, ${ctx.session.city} - ${ctx.session.description}` });
-            } else {
-                await ctx.replyWithPhoto({ url: `${ctx.session.photo}` }, { caption: `${ctx.session.name}, ${ctx.session.age}, ${ctx.session.city}` });
-            }
+            await ctx.replyWithPhoto({ url: `${ctx.session.photo}` }, { caption: `${ctx.session.name}, ${ctx.session.age}, ${ctx.session.city} ${ctx.session.description === 'Skip' ? '' : ' - ' + ctx.session.description}` });
 
             await ctx.reply(SCENES_TEXT.register_approve_correct, {
                 ...approveButton

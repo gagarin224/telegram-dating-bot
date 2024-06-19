@@ -57,8 +57,7 @@ export default class Menu {
                 const { chatId, name, age, city, description, photo } = result;
                 ctx.session.memberId = chatId;
 
-                if (description != BUTTON_TEXT.skip) await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city} - ${description}`, ...viewProfileButton });
-                else await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city}`, ...viewProfileButton });
+                await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city} ${description === 'Skip' ? '' : ' - ' + description}`, ...viewProfileButton });
             } else {
                 await ctx.reply(SCENES_TEXT.view_error);
                 return ctx.scene.enter('main');
@@ -123,14 +122,8 @@ export default class Menu {
 
             const { name, age, city, description, photo } = ctx.session;
 
-            if (description != BUTTON_TEXT.skip) {
-                await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city} - ${description}` });
-                return await ctx.reply(SCENES_TEXT.profile_enter);
-            }
-            else {
-                await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city}` });
-                return await ctx.reply(SCENES_TEXT.profile_enter);
-            }
+            await ctx.replyWithPhoto({ url: photo }, { caption: `${name}, ${age}, ${city} ${description === 'Skip' ? '' : ' - ' + description}` });
+            return await ctx.reply(SCENES_TEXT.profile_enter);
         });
 
         profile.on('text', async (ctx) => {
@@ -176,11 +169,9 @@ export default class Menu {
                 const { name, age, city, description, photo } = data;
 
                 if (message) {
-                    if (description != BUTTON_TEXT.skip) await ctx.replyWithPhoto({ url: photo }, { caption: `${SCENES_TEXT.likes_enter}\n\n${name}, ${age}, ${city} - ${description}\n\n${SCENES_TEXT.likes_message_for_you} ${message}`, ...likeButton });
-                    else await ctx.replyWithPhoto({ url: photo }, { caption: `${SCENES_TEXT.likes_enter}\n\n${name}, ${age}, ${city}\n\n${SCENES_TEXT.likes_message_for_you} ${message}`, ...likeButton });
+                    await ctx.replyWithPhoto({ url: photo }, { caption: `${SCENES_TEXT.likes_enter}\n\n${name}, ${age}, ${city} ${description === 'Skip' ? '' : ' - ' + description}\n\n${SCENES_TEXT.likes_message_for_you} ${message}`, ...likeButton });
                 } else {
-                    if (description != BUTTON_TEXT.skip) await ctx.replyWithPhoto({ url: photo }, { caption: `${SCENES_TEXT.likes_enter}\n\n${name}, ${age}, ${city} - ${description}`, ...likeButton });
-                    else await ctx.replyWithPhoto({ url: photo }, { caption: `${SCENES_TEXT.likes_enter}\n\n${name}, ${age}, ${city}`, ...likeButton });
+                    await ctx.replyWithPhoto({ url: photo }, { caption: `${SCENES_TEXT.likes_enter}\n\n${name}, ${age}, ${city} ${description === 'Skip' ? '' : ' - ' + description}`, ...likeButton });
                 }
             } else {
                 await ctx.reply(SCENES_TEXT.likes_error);
